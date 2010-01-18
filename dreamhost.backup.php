@@ -43,8 +43,9 @@ $files_subdir = 'users';   // Remote folder for storing the backed up user accou
 
 // Specify excludes and includes for your files
 // Note1: '__common__' is a special user and will be used on all users
-// Note2: Read the manual on rsync to understand how to build the patterns
-// Syntax: $(in|ex)cludes['user'] = array(pattern1, pattern2, etc...)
+// Note2: Read the manual on rsync to understand how to build the patterns.
+//        Use a '+ ' at the beginning of the pattern to make it an include.
+// Syntax: $(excludes['user'] = array(pattern1, pattern2, etc...)
 $excludes = array(
     '__common__'=>array(
         '/Maildir**',
@@ -58,8 +59,6 @@ $excludes = array(
         '/sites/**/www/forum/cache/**'
     )
 );
-
-$includes = array();
 
 
 /*****************************************
@@ -217,63 +216,32 @@ array_pop($var); // remove the prompt from the returned output
 return join("\n", $var)."\n";
 }
 
-// Prepends --exclude or --include on the respective elements.
-// This allows simplification on the configuration at the top.
-// $flag must be either 'ex' or 'in'
-function cludes($stack, $flag) 
-{
-    $new_stack = array();
-    foreach ($stack as $user=>$cludes) {
-        foreach ($cludes as $clude) {
-            $new_stack[$user][] = '--'.$flag.'clude '.$clude;
-        }
-    }
-    return $new_stack;
-}
-
-// Extracts all the excludes and includes for a certain user, as a string.
-// It fetches the common values automatically.
-// $flag must be either 'ex' or 'in'
-function user_cludes($user, $flag)
-{
-    $cludes = $flag.'cludes';
-    global $$cludes;
-    $stack = array();
-    
-    if (isset(${$cludes}['__common__'])) {
-        $stack = ${$cludes}['__common__'];
-    }	
-    if (isset(${$cludes}[$user])) {
-        $stack = array_merge($stack, ${$cludes}[$user]);
-    }
-    
-    return join(' ', $stack);
-}
-
-// Return the rsync command based on a user and the 
-// associated excludes and includes.
+// Return the rsync command based on a user and the associated excludes.
 function get_rsync_cmd($user, $backup)
 {
-    global $files_subdir; 
+    global $files_subdir, $excludes; 
     
-    $excludes = user_cludes($user->username, 'ex');
-    $includes = user_cludes($user->username, 'in');
+    $stack = array();
+    
+    if (isset($excludes['__common__'])) {
+        $stack = $excludes['__common__'];
+    }
+    if (isset($excludes[$user->username])) {
+        $stack = array_merge($stack, $excludes[$user->username]);
+    }
+    
+    $exclude_str = count($stack) ? '--exclude '.join(' --exclude ', $stack) : '';
     
     $root_d = '/home/'.$user->username.'/';
     $r_conn = "{$backup->username}@{$backup->home}:{$files_subdir}/{$user->username}/";
     $r_optn = '-auvz --delete --delete-excluded --timeout=43200 --force';
-    $rs_cmd = "rsync -e ssh $r_optn $root_d $includes $excludes $r_conn";
+    $rs_cmd = "rsync -e ssh $r_optn $root_d $exclude_str $r_conn";
     
     return $rs_cmd;
 }
 
 // Exclude the newly synced databases from the users backup
 $excludes[$account_user][] = '/'.$backups_dir.'/'.$mysql_subdir.'**';
-
-// Doing this mess to allow for easy configuration at the top
-$includes = isset($includes) ? cludes($includes, 'in') : array();
-$excludes = isset($excludes) ? cludes($excludes, 'ex') : array();
-global $includes, $excludes;
 
 // Loop through the shell users and rsync them with the backup user
 foreach ($shell_users as $user) {
