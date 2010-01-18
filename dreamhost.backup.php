@@ -1,40 +1,41 @@
 <?php
 /*** 
  * 2010/01/17 - Helder Correia - http://heldercorreia.com/
- *
+ * 
  * Title: Dreamhost Full Account Backup
- *
+ * 
  * Intro: I needed a simple script to backup all my mysql databases and users 
- * 		  on my dreamhost account. 
- *
+ *        on my dreamhost account. 
+ *        
  *        With this solution I don't need to store here all my sensitive login 
- * 	      for mysqldump, nor do I need to set up ssh public keys for passwordless 
+ *        for mysqldump, nor do I need to set up ssh public keys for passwordless 
  *        connections, whenever I add a new user (or remove!).
- *
+ *        
  *        I just have a passwordless ssh login set up from my main account to 
- * 		  the backup account, and run this script from there as a cronjob.
- *
- * 		  The API key must be provided as an argument to the script. This is also
+ *        the backup account, and run this script from there as a cronjob.
+ *        
+ *        The API key must be provided as an argument to the script. This is also
  *        to prevent storing sensitive data on this file.
- *
+ *        
  *        I use PHP's SimpleXMLElement class to easily get my data from the API.
  *        That's where all the data necessary (including passwords), comes from.
  *        I also use an Expect script to remotely ssh into the other user accounts
  *        and rsync them from there.
- *
+ *        
  *        So I don't need to do anything when I create/delete databases/users. This
  *        is the purpose of a fully automated backup system. The more automated the better.
- *		  Very little configuration is needed here.
- * 
- * 		  I'm interested in improvements, so send me your patches to helder@heldercorreia.com.
- *		  Suggestions: make this simpler; create local mysql backup folder if it doesn't exist.
+ *        Very little configuration is needed here.
+ *        
+ *        I'm interested in improvements, so send me your patches to helder@heldercorreia.com.
+ *        Suggestions: make this simpler; create local mysql backup folder if it doesn't exist;
+ *                     improve Expect script to be prepared for more situations.
  **/
 
 /*********************
  *** CONFIGURATION ***
  *********************/
 
-// Specify you chosen directories (remote = backups user account)
+// Specify your chosen directories (remote = backups user account)
 // Note: No trailing slashes
 $backups_dir  = 'backups'; // Local backups folder to store the dbs (e.g.: 'tmp')
 $mysql_subdir = 'mysql';   // Remote (and local) folder for mysql dbs
@@ -45,17 +46,17 @@ $files_subdir = 'users';   // Remote folder for storing the backed up user accou
 // Note2: Read the manual on rsync to understand how to build the patterns
 // Syntax: $(in|ex)cludes['user'] = array(pattern1, pattern2, etc...)
 $excludes = array(
-	'__common__'=>array(
-		'/Maildir**',
-		'/dh**',
-		'/jabber**',
-		'/logs**',
-		'/tmp**'
-	),
-	'myuser'=>array(
-		'/sites/**/www/cache/**',
-		'/sites/**/www/forum/cache/**'
-	)
+    '__common__'=>array(
+        '/Maildir**',
+        '/dh**',
+        '/jabber**',
+        '/logs**',
+        '/tmp**'
+    ),
+    'myuser'=>array(
+        '/sites/**/www/cache/**',
+        '/sites/**/www/forum/cache/**'
+    )
 );
 
 $includes = array();
@@ -66,7 +67,7 @@ $includes = array();
  *****************************************/
  
 if ($_SERVER['argc']!=2) {
-	exit ("You need to provide the dreamhost API key!");
+    exit("You need to provide the dreamhost API key!");
 }
 
 $home = $_SERVER['HOME'];
@@ -75,7 +76,7 @@ $begin_script = time();
 
 function label($text)
 {
-	return "\n[".date('r')."] ".$text."\n";
+    return "\n[".date('r')."] ".$text."\n";
 }
 
 echo "#################################################\n";
@@ -84,25 +85,25 @@ echo "###      ".date('r')."      ###\n";
 echo "#################################################\n";
 
 try {
-	// Check if we can read/write to mysql subdir chosen
-	$mysql_arquives = new DirectoryIterator($home.'/'.$backups_dir.'/'.$mysql_subdir);
-	if (!$mysql_arquives->isReadable() || !$mysql_arquives->isWritable()) {
-		throw new RuntimeException('No read or write access.');
-	}
+    // Check if we can read/write to mysql subdir chosen
+    $mysql_arquives = new DirectoryIterator($home.'/'.$backups_dir.'/'.$mysql_subdir);
+    if (!$mysql_arquives->isReadable() || !$mysql_arquives->isWritable()) {
+        throw new RuntimeException('No read or write access.');
+    }
 } catch (RuntimeException $e) {
-	exit("Please make sure you provide a valid folder for the arquives, with read and write access.\n");
+    exit("Please make sure you provide a valid folder for the arquives, with read and write access.\n");
 }
 
 // Return an array with stdClass objects from API commands
 function request_api($cmd)
 {
-	$api_key = $_SERVER['argv'][1];
+    $api_key = $_SERVER['argv'][1];
     $xml = new SimpleXMLElement(
-    	'https://api.dreamhost.com/?key='.$api_key.'&cmd='.$cmd.'&format=xml'
-    	, null, true
+        'https://api.dreamhost.com/?key='.$api_key.'&cmd='.$cmd.'&format=xml'
+        , null, true
     );
     if ((string) $xml->result != 'success') {
-    	exit("Request for '$cmd' unsuccessful.\n");
+        exit("Request for '$cmd' unsuccessful.\n");
     }
     // Use json decode/encode to convert the SimpleXMLElement objects into stdClass objects
     return json_decode(json_encode($xml->xpath('/dreamhost/data')));
@@ -111,27 +112,27 @@ function request_api($cmd)
 
 /*********** PREPARE DATA FOR EASE OF USE ************/
 
-$list_users   	  = request_api('user-list_users');
+$list_users       = request_api('user-list_users');
 $list_mysql_dbs   = request_api('mysql-list_dbs');
 $list_mysql_users = request_api('mysql-list_users');
-	
+
 $backup_user = null;
 $shell_users = array();
 $mysql_users = array();
 
 foreach ($list_users as $user) {
-	switch ($user->type) {
-		case 'backup' : $backup_user = $user; break;
-		case 'shell'  : $shell_users[$user->username] = $user; break;
-	}
+    switch ($user->type) {
+        case 'backup' : $backup_user = $user; break;
+        case 'shell'  : $shell_users[$user->username] = $user; break;
+    }
 }
 
 if (is_null($backup_user)) {
-	exit('Please make sure you have your dreamhost backup user account activated!');
+    exit('Please make sure you have your dreamhost backup user account activated!');
 }
 
-foreach ($list_mysql_users as $mysql_user) {	
-	$mysql_users[$mysql_user->db][$mysql_user->username] = $mysql_user;
+foreach ($list_mysql_users as $mysql_user) {
+    $mysql_users[$mysql_user->db][$mysql_user->username] = $mysql_user;
 }
 
 
@@ -141,12 +142,12 @@ echo label('Backing up databases...');
 
 function backup_mysql($db, $arquive, $suffix = '') 
 {
-	$sql_file = "$arquive/{$db->db}{$suffix}.sql.gz";
-	$mysql_dump = "mysqldump -c -u$db->user -p$db->password -h$db->home $db->db | gzip > $sql_file";
+    $sql_file = "$arquive/{$db->db}{$suffix}.sql.gz";
+    $mysql_dump = "mysqldump -c -u$db->user -p$db->password -h$db->home $db->db | gzip > $sql_file";
     
     $exit_status = null;
     system($mysql_dump, $exit_status);
-
+    
     if ($exit_status == 0) {
         echo "{$db->db} was backed up successfully to {$sql_file}.\n";
         return true;
@@ -157,16 +158,16 @@ function backup_mysql($db, $arquive, $suffix = '')
 }
 
 foreach ($list_mysql_dbs as $mysql_db) {
-	if (isset($mysql_users[$mysql_db->db][$account_user])) {
-		$mysql_db->user = $account_user;
-		$mysql_db->password = $shell_users[$account_user]->password;
-	}
-	else {
-		list($mysql_user) = array_values(array_slice($mysql_users[$mysql_db->db], 0, 1));
-		$mysql_db->user = $mysql_user->username;
-		$mysql_db->password = $shell_users[$mysql_user->username]->password;
-	}
-	
+    if (isset($mysql_users[$mysql_db->db][$account_user])) {
+        $mysql_db->user = $account_user;
+        $mysql_db->password = $shell_users[$account_user]->password;
+    }
+    else {
+        list($mysql_user) = array_values(array_slice($mysql_users[$mysql_db->db], 0, 1));
+        $mysql_db->user = $mysql_user->username;
+        $mysql_db->password = $shell_users[$mysql_user->username]->password;
+    }
+    
     backup_mysql($mysql_db, $home.'/'.$backups_dir.'/'.$mysql_subdir, '.'.date('\ww'));
 }
 
@@ -221,13 +222,13 @@ return join("\n", $var)."\n";
 // $flag must be either 'ex' or 'in'
 function cludes($stack, $flag) 
 {
-	$new_stack = array();
-	foreach ($stack as $user=>$cludes) {
-		foreach ($cludes as $clude) {
-			$new_stack[$user][] = '--'.$flag.'clude '.$clude;
-		}
-	}
-	return $new_stack;
+    $new_stack = array();
+    foreach ($stack as $user=>$cludes) {
+        foreach ($cludes as $clude) {
+            $new_stack[$user][] = '--'.$flag.'clude '.$clude;
+        }
+    }
+    return $new_stack;
 }
 
 // Extracts all the excludes and includes for a certain user, as a string.
@@ -235,35 +236,35 @@ function cludes($stack, $flag)
 // $flag must be either 'ex' or 'in'
 function user_cludes($user, $flag)
 {
-	$cludes = $flag.'cludes';
-	global $$cludes;
-	$stack = array();
-
-	if (isset(${$cludes}['__common__'])) {
-		$stack = ${$cludes}['__common__'];
-	}	
-	if (isset(${$cludes}[$user])) {
-		$stack = array_merge($stack, ${$cludes}[$user]);
-	}
-
-	return join(' ', $stack);
+    $cludes = $flag.'cludes';
+    global $$cludes;
+    $stack = array();
+    
+    if (isset(${$cludes}['__common__'])) {
+        $stack = ${$cludes}['__common__'];
+    }	
+    if (isset(${$cludes}[$user])) {
+        $stack = array_merge($stack, ${$cludes}[$user]);
+    }
+    
+    return join(' ', $stack);
 }
 
 // Return the rsync command based on a user and the 
 // associated excludes and includes.
 function get_rsync_cmd($user, $backup)
 {
-	global $files_subdir; 
-	
-	$excludes = user_cludes($user->username, 'ex');
-	$includes = user_cludes($user->username, 'in');
-	
-	$root_d = '/home/'.$user->username.'/';
-	$r_conn = "{$backup->username}@{$backup->home}:{$files_subdir}/{$user->username}/";
-	$r_optn = '-auvz --delete --delete-excluded --timeout=43200 --force';
-	$rs_cmd = "rsync -e ssh $r_optn $root_d $includes $excludes $r_conn";
-
-	return $rs_cmd;
+    global $files_subdir; 
+    
+    $excludes = user_cludes($user->username, 'ex');
+    $includes = user_cludes($user->username, 'in');
+    
+    $root_d = '/home/'.$user->username.'/';
+    $r_conn = "{$backup->username}@{$backup->home}:{$files_subdir}/{$user->username}/";
+    $r_optn = '-auvz --delete --delete-excluded --timeout=43200 --force';
+    $rs_cmd = "rsync -e ssh $r_optn $root_d $includes $excludes $r_conn";
+    
+    return $rs_cmd;
 }
 
 // Exclude the newly synced databases from the users backup
@@ -276,19 +277,19 @@ global $includes, $excludes;
 
 // Loop through the shell users and rsync them with the backup user
 foreach ($shell_users as $user) {
-	echo label('Backing up user `'.$user->username.'`');
-	$cmd = get_rsync_cmd($user, $backup_user);
+    echo label('Backing up user `'.$user->username.'`');
+    $cmd = get_rsync_cmd($user, $backup_user);
     // I have set up an authorized connection from this user account 
     // (the main account) to the backup user account, so we can skip 
     // the prior ssh connection to rsync and rsync directly.
-	if ($user->username == $account_user) {
-		echo shell_exec($cmd);
-	}
-	else {
-		$ssh = $user->username.'@'.$user->home;
-		echo rsync($ssh, $user->password, $cmd, $backup_user->password);
-	}
-	echo "\n";
+    if ($user->username == $account_user) {
+        echo shell_exec($cmd);
+    }
+    else {
+        $ssh = $user->username.'@'.$user->home;
+        echo rsync($ssh, $user->password, $cmd, $backup_user->password);
+    }
+    echo "\n";
 }
 
 echo label('Backup complete. Have a nice day!');
