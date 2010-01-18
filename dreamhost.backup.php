@@ -4,6 +4,8 @@
  * 
  * Title: Dreamhost Full Account Backup
  * 
+ * Github: http://github.com/helderco/Dreamhost-Full-Auto-Backup/
+ * 
  * Intro: I needed a simple script to backup all my mysql databases and users 
  *        on my dreamhost account. 
  *        
@@ -26,9 +28,9 @@
  *        is the purpose of a fully automated backup system. The more automated the better.
  *        Very little configuration is needed here.
  *        
- *        I'm interested in improvements, so send me your patches to helder@heldercorreia.com.
+ *        I'm interested in improvements, so be free to contribute.
  *        Suggestions: make this simpler; create local mysql backup folder if it doesn't exist;
- *                     improve Expect script to be prepared for more situations.
+ *                     improve Expect script to be smarter.
  **/
 
 /*********************
@@ -45,7 +47,7 @@ $files_subdir = 'users';   // Remote folder for storing the backed up user accou
 // Note1: '__common__' is a special user and will be used on all users
 // Note2: Read the manual on rsync to understand how to build the patterns.
 //        Use a '+ ' at the beginning of the pattern to make it an include.
-// Syntax: $(excludes['user'] = array(pattern1, pattern2, etc...)
+// Syntax: $excludes['user'] = array(pattern1, pattern2, etc...)
 $excludes = array(
     '__common__'=>array(
         '/Maildir**',
