@@ -175,7 +175,7 @@ foreach ($list_mysql_dbs as $mysql_db) {
 echo label('Syncing mysql backup with backup server...');
 
 $connect = $backup_user->username.'@'.$backup_user->home;
-echo shell_exec("rsync -e ssh -avz $backups_dir/$mysql_subdir $connect:$mysql_subdir/");
+echo shell_exec("rsync -e ssh -avhz $backups_dir/$mysql_subdir $connect:$mysql_subdir/");
 echo "\n";
 
 
