@@ -30,11 +30,16 @@ Installation
 
 It's very simple:
 
-*   Activate your dreamhost backups user account;
-*   Set up passwordless login between your main account and the backups server;
-*   Create an API key with the following functions *user-list_users*, *mysql-list_dbs*, *mysql-list_users*;
+*   Activate your dreamhost [backups user account](http://wiki.dreamhost.com/Personal_Backup);
+*   Set up [passwordless login](http://wiki.dreamhost.com/Ssh#Passwordless_Login) between your 
+    main account and the backups server;
+*   Create an [API](http://wiki.dreamhost.com/Api) key with the following functions: 
+    [user-list_users](http://wiki.dreamhost.com/Api#user-list_users), 
+    [mysql-list_dbs](http://wiki.dreamhost.com/Api#mysql-list_dbs), 
+    [mysql-list_users](http://wiki.dreamhost.com/Api#mysql-list_users);
 *   Create a folder for the mysql dumps;
-*   Download the script and put it anywhere you want.
+*   Download the script and put it anywhere you want;
+*   Create a [cronjon](http://wiki.dreamhost.com/Goodies_Control_Panel#Cron_Jobs) to run daily.
 
 
 Execution
@@ -50,8 +55,9 @@ And to find the location:
 
 `$ which php`
 
-If this returns what you need you don't have to provide the full path bellow, unless you're doing it 
-from the panel's cronjobs.
+If this [returns what you need](http://wiki.dreamhost.com/Enabling_the_use_of_PHP5_by_default_in_the_shell) 
+you don't have to provide the full path bellow, unless you're doing it from the panel's 
+[cronjobs](https://panel.dreamhost.com/?tree=goodies.cron).
 
 At this time, on dreamhost, the path to PHP5 is
 
@@ -65,7 +71,7 @@ At this time, on dreamhost, the path to PHP5 is
 
 ### Method 2 ###
 
-Add this to the beginning of the file
+[Add this](http://www.php-cli.com/php-cli-tutorial.shtml#first) to the beginning of the file
 
 `#!/path/to/php -q`
 
@@ -87,4 +93,4 @@ Suggestions:
 
 *   Make this simpler; 
 *   Create local mysql backup folder if it doesn't exist;
-*   Improve Expect script to be smarter.
+*   Improve [Expect](http://expect.nist.gov/) script to be smarter.
