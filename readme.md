@@ -7,11 +7,12 @@ Installation
 ------------
 
 It's very simple:
-* Activate your dreamhost backups user account;
-* Set up passwordless login between your main account and the backups server;
-* Create an API key with the following functions *user-list_users*, *mysql-list_dbs*, *mysql-list_users*;
-* Create a folder for the mysql dumps;
-* Download the script and put it anywhere you want.
+
+*   Activate your dreamhost backups user account;
+*   Set up passwordless login between your main account and the backups server;
+*   Create an API key with the following functions *user-list_users*, *mysql-list_dbs*, *mysql-list_users*;
+*   Create a folder for the mysql dumps;
+*   Download the script and put it anywhere you want.
 
 Execution
 ---------
@@ -34,7 +35,7 @@ At this time, on dreamhost, the path to PHP5 is
 
 ### Method 1 ###
 
-`/path/to/php -q path/to/script api_key`
+`$ /path/to/php -q path/to/script api_key`
 
 ### Method 2 ###
 
@@ -44,8 +45,8 @@ Add this to the beginning of the file
 
 ...then make it executable with
 
-`chmod u+x path/to/script`
+`$ chmod u+x path/to/script`
 
 ...and run it as
 
-`path/to/script api_key`
+`$ path/to/script api_key`
