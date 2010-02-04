@@ -1,36 +1,11 @@
 <?php
 /*** 
- * 2010/01/17 - Helder Correia - http://heldercorreia.com/
+ * 2010/01/17 • Helder Correia • http://heldercorreia.com/
  * 
  * Title: Dreamhost Full Account Backup
  * 
- * Github: http://github.com/helderco/Dreamhost-Full-Auto-Backup/
- * 
- * Intro: I needed a simple script to backup all my mysql databases and users 
- *        on my dreamhost account. 
- *        
- *        With this solution I don't need to store here all my sensitive login 
- *        for mysqldump, nor do I need to set up ssh public keys for passwordless 
- *        connections, whenever I add a new user (or remove!).
- *        
- *        I just have a passwordless ssh login set up from my main account to 
- *        the backup account, and run this script from there as a cronjob.
- *        
- *        The API key must be provided as an argument to the script. This is also
- *        to prevent storing sensitive data on this file.
- *        
- *        I use PHP's SimpleXMLElement class to easily get my data from the API.
- *        That's where all the data necessary (including passwords), comes from.
- *        I also use an Expect script to remotely ssh into the other user accounts
- *        and rsync them from there.
- *        
- *        So I don't need to do anything when I create/delete databases/users. This
- *        is the purpose of a fully automated backup system. The more automated the better.
- *        Very little configuration is needed here.
- *        
- *        I'm interested in improvements, so be free to contribute.
- *        Suggestions: make this simpler; create local mysql backup folder if it doesn't exist;
- *                     improve Expect script to be smarter.
+ * Project home: http://github.com/helderco/Dreamhost-Full-Auto-Backup/
+ *
  **/
 
 /*********************
