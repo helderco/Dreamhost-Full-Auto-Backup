@@ -43,7 +43,7 @@ $excludes = array(
  *****************************************/
  
 if ($_SERVER['argc']!=2) {
-    exit("You need to provide the dreamhost API key!");
+    exit("You need to provide the dreamhost API key!\n");
 }
 
 $home = $_SERVER['HOME'];
