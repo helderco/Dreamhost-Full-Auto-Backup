@@ -47,7 +47,7 @@ if ($_SERVER['argc']!=2) {
 }
 
 $home = $_SERVER['HOME'];
-$account_user = $_SERVER['USER'];
+$account_user = $_SERVER['LOGNAME'];
 $begin_script = time();
 
 function label($text)
