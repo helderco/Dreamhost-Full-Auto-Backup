@@ -33,6 +33,7 @@ $excludes = array(
     ),
     'myuser'=>array(
         '/sites/**/www/cache/**',
+        '/sites/**/www/administrator/cache/**',
         '/sites/**/www/forum/cache/**'
     )
 );
