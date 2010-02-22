@@ -174,7 +174,7 @@ expect "?assword: "
 send "'.$ssh_pass.'\r"
 
 expect "\\\$"
-send "'.$rsync.'\r"
+send "'.addslashes($rsync).'\r"
 
 expect "?assword: " 
 send "'.$backup_pass.'\r"
@@ -212,8 +212,9 @@ function get_rsync_cmd($user, $backup)
     
     $root_d = '/home/'.$user->username.'/';
     $r_conn = "{$backup->username}@{$backup->home}:{$files_subdir}/{$user->username}/";
+    $rs_ssh = '"ssh -q -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"';
     $r_optn = '-auvz --delete --delete-excluded --timeout=43200 --force';
-    $rs_cmd = "rsync -e ssh $r_optn $root_d $exclude_str $r_conn";
+    $rs_cmd = "rsync -e $rs_ssh $r_optn $root_d $exclude_str $r_conn";
     
     return $rs_cmd;
 }
