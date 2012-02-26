@@ -3,6 +3,15 @@ Dreamhost Full Auto Backup
 
 You can read more from Dreamhost's Personal Backpus at <http://wiki.dreamhost.com/Personal_Backup>
 
+
+Deprecation notice
+------------------
+
+This script is now **obsolete**. Dreamhost decided, for security reasons, not to provide passwords through the API anymore. I was depending on that to fully automate backups without the user having to do anything when adding databases and users to his/her account. So I decided to re-write this from scratch but with Python, in another effort to automate as much as possible the backup of mysql databases and user files in Dreamhost.
+
+New: https://github.com/helderco/dh-auto-backup
+
+
 Introduction
 ------------
 
