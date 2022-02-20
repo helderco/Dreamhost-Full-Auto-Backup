@@ -1,5 +1,5 @@
-Dreamhost Full Auto Backup
-==========================
+Dreamhost Full Auto Backup (DEPRECATED)
+=======================================
 
 You can read more from Dreamhost's Personal Backpus at <http://wiki.dreamhost.com/Personal_Backup>
 
